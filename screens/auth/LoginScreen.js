@@ -1,9 +1,20 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, Alert, Image } from 'react-native';
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  Alert,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../../context/AuthContext';
-import logo from '../../assets/logo.png';
-
 
 const LoginScreen = ({ navigation }) => {
   const { login } = useContext(AuthContext);
@@ -11,79 +22,85 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    const savedUser = await AsyncStorage.getItem('localUser');
-    if (savedUser) {
-      const parsed = JSON.parse(savedUser);
-      if (parsed.email === email && parsed.password === password) {
-        await AsyncStorage.setItem('access_token', 'local_dummy_token');
-        login('local_dummy_token');
-        return;
-      }
-    }
-
     try {
-      const res = await fetch('https://dummyjson.com/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password }),
-      });
+      const savedUser = await AsyncStorage.getItem('localUser');
 
-      const data = await res.json();
-      if (data.token) {
-        await AsyncStorage.setItem('access_token', data.token);
-        login(data.token);
-      } else {
-        Alert.alert('Login Failed', 'Invalid credentials');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+
+        if (parsed.email === email.trim().toLowerCase() && parsed.password === password) {
+          await AsyncStorage.setItem('access_token', 'local_dummy_token');
+          login('local_dummy_token', 'local_dummy_refresh_token');
+          return;
+        } else {
+          Alert.alert('Login Failed', 'Incorrect email or password.');
+          return;
+        }
       }
+
+      Alert.alert('Login Failed', 'No user found. Please sign up first.');
     } catch (err) {
-      Alert.alert('Error', 'Network error or API failure');
+      Alert.alert('Error', 'Something went wrong. Try again.');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={styles.heading}>Hi there 👋, welcome back!</Text>
-      <TextInput
-        placeholder="Email or username"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <View style={styles.buttonSpacing}>
-        <Button title="Login" onPress={handleLogin} color="#007AFF" />
-      </View>
-      <Text onPress={() => navigation.navigate('Signup')} style={styles.link}>
-        Don't have an account? <Text style={styles.linkBold}>Sign up</Text>
-      </Text>
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+          <View style={styles.container}>
+            <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+            <Text style={styles.heading}>Hi there 👋, welcome back!</Text>
+
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+
+            <View style={styles.buttonSpacing}>
+              <Button title="Login" onPress={handleLogin} color="#007AFF" />
+            </View>
+
+            <Text onPress={() => navigation.navigate('Signup')} style={styles.link}>
+              Don't have an account? <Text style={styles.linkBold}>Sign up</Text>
+            </Text>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   container: {
     padding: 24,
     backgroundColor: '#f2f2f2',
-    flex: 1,
     justifyContent: 'center',
   },
-  logo:{
-     width: 100,
+  logo: {
+    width: 100,
     height: 100,
     alignSelf: 'center',
-    marginBottom: 30
+    marginBottom: 30,
   },
   heading: {
     fontSize: 26,

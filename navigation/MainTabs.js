@@ -47,6 +47,7 @@ const MainTabs = () => {
       <Tab.Screen name="Cart" component={CartScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="ProductDetail" component={ProductDetail}/>
+
     </Tab.Navigator>
   );
 };

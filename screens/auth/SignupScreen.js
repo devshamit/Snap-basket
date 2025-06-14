@@ -1,76 +1,128 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, Text, Image } from 'react-native';
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  Text,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import logo from '../../assets/logo.png';
-
 
 const SignupScreen = ({ navigation }) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignup = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Email and Password required");
+    if (!firstName || !lastName || !mobile || !email || !password) {
+      Alert.alert('Error', 'All fields are required!');
       return;
     }
 
-    const newUser = { email, password };
+    const newUser = { firstName, lastName, mobile, email:email.trim().toLowerCase(), password };
     await AsyncStorage.setItem('localUser', JSON.stringify(newUser));
-
-    Alert.alert("Success", "Signup successful. Please login.");
+    console.log('User saved:', newUser);
+    Alert.alert('Success', 'Signup successful. Please login.');
     navigation.navigate('Login');
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={styles.heading}>🔐 Create Your Account</Text>
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <View style={styles.buttonSpacing}>
-        <Button title="Sign Up" onPress={handleSignup} color="#007AFF" />
-      </View>
-      <Text onPress={() => navigation.navigate('Login')} style={styles.link}>
-        Already have an account? <Text style={styles.linkBold}>Login</Text>
-      </Text>
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.heading}>🔐 Create Your Account</Text>
+
+            <TextInput
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Mobile"
+              value={mobile}
+              onChangeText={setMobile}
+              style={styles.input}
+              keyboardType="phone-pad"
+            />
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+
+            <View style={styles.buttonSpacing}>
+              <Button title="Sign Up" onPress={handleSignup} color="#007AFF" />
+            </View>
+
+            <Text onPress={() => navigation.navigate('Login')} style={styles.link}>
+              Already have an account? <Text style={styles.linkBold}>Login</Text>
+            </Text>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   container: {
     padding: 24,
     backgroundColor: '#f2f2f2',
-    flex: 1,
     justifyContent: 'center',
   },
-  logo:{
-     width: 100,
+  logo: {
+    width: 100,
     height: 100,
     alignSelf: 'center',
-    marginBottom: 30
+    marginBottom: 30,
   },
   heading: {
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginBottom: 20,
     textAlign: 'center',
     color: '#333',
   },
@@ -78,7 +130,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
-    marginVertical: 10,
+    marginVertical: 8,
     padding: 12,
     borderRadius: 10,
     fontSize: 16,

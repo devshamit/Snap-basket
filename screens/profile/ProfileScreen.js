@@ -14,35 +14,62 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from '../../context/ThemeContext';
 import { AuthContext } from '../../context/AuthContext';
+import { AntDesign } from '@expo/vector-icons';
 
-const ProfileScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
-  const [imageUri, setImageUri] = useState(null);
+const ProfileScreen = () => {
   const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
   const { logout } = useContext(AuthContext);
 
+  const [imageUri, setImageUri] = useState(null);
+  const [fields, setFields] = useState({
+    name: '',
+    email: '',
+    mobile: '',
+    password: '',
+  });
+  const [editableFields, setEditableFields] = useState({
+    name: false,
+    email: false,
+    mobile: false,
+    password: false,
+  });
+
   useEffect(() => {
-    (async () => {
-      const savedName = await AsyncStorage.getItem('profile_name');
-      const savedImage = await AsyncStorage.getItem('profile_image');
-      if (savedName) setName(savedName);
-      if (savedImage) setImageUri(savedImage);
-    })();
+    const loadData = async () => {
+      try {
+        const savedImage = await AsyncStorage.getItem('profile_image');
+        if (savedImage) setImageUri(savedImage);
+
+        const userData = await AsyncStorage.getItem('localUser');
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          const fullName = `${parsed.firstName || ''} ${parsed.lastName || ''}`.trim();
+          setFields({
+            name: fullName,
+            email: parsed.email || '',
+            mobile: parsed.mobile || '',
+            password: parsed.password || '',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      }
+    };
+    loadData();
   }, []);
 
-  useEffect(() => {
-    AsyncStorage.setItem('profile_name', name);
-  }, [name]);
-
-  const handleLogout = () => {
-    Alert.alert('Logged out', 'You have been successfully logged out.', [
-      {
-        text: 'OK',
-        onPress: () => {
-          logout();
-        },
-      },
-    ]);
+  const saveFieldChanges = async () => {
+    const [firstName, ...rest] = fields.name.trim().split(' ');
+    const lastName = rest.join(' ');
+    const updatedUser = {
+      firstName: firstName || '',
+      lastName: lastName || '',
+      email: fields.email,
+      mobile: fields.mobile,
+      password: fields.password,
+    };
+    await AsyncStorage.setItem('localUser', JSON.stringify(updatedUser));
+    Alert.alert('Updated', 'Profile information updated.');
   };
 
   const pickImage = async () => {
@@ -65,12 +92,33 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert('Logged out', 'You have been successfully logged out.', [
+      { text: 'OK', onPress: () => logout() },
+    ]);
+  };
+
+  const toggleEdit = (field) => {
+    setEditableFields((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const handleChange = (field, value) => {
+    setFields((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const themeColors = {
+    bg: isDarkMode ? '#121212' : '#f9f9f9',
+    text: isDarkMode ? '#fff' : '#222',
+    border: isDarkMode ? '#555' : '#ccc',
+    placeholder: isDarkMode ? '#aaa' : '#888',
+    inputBg: isDarkMode ? '#1f1f1f' : '#fff',
+  };
+
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: isDarkMode ? '#222' : '#fff' },
-      ]}>
+    <View style={[styles.container, { backgroundColor: themeColors.bg }]}>
       <TouchableOpacity onPress={pickImage}>
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.image} />
@@ -81,26 +129,41 @@ const ProfileScreen = ({ navigation }) => {
         )}
       </TouchableOpacity>
 
-      <TextInput
-        placeholder="Your Name"
-        style={[
-          styles.input,
-          {
-            color: isDarkMode ? '#fff' : '#000',
-            borderBottomColor: isDarkMode ? '#888' : '#ccc',
-          },
-        ]}
-        placeholderTextColor={isDarkMode ? '#aaa' : '#888'}
-        value={name}
-        onChangeText={setName}
-      />
+      {['name', 'email', 'mobile', 'password'].map((field) => (
+        <View key={field} style={[styles.inputRow, { borderColor: themeColors.border }]}>
+          <TextInput
+            value={fields[field]}
+            editable={editableFields[field]}
+            secureTextEntry={field === 'password'}
+            onChangeText={(text) => handleChange(field, text)}
+            style={[
+              styles.input,
+              {
+                color: themeColors.text,
+                backgroundColor: themeColors.inputBg,
+              },
+            ]}
+            placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+            placeholderTextColor={themeColors.placeholder}
+          />
+          <TouchableOpacity onPress={() => toggleEdit(field)} style={styles.editIcon}>
+            <AntDesign name="edit" size={20} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
+      ))}
+
+      <TouchableOpacity style={styles.saveBtn} onPress={saveFieldChanges}>
+        <Text style={styles.saveBtnText}>Save Changes</Text>
+      </TouchableOpacity>
 
       <View style={styles.row}>
-        <Text style={{ color: isDarkMode ? '#fff' : '#000' }}>Dark Mode</Text>
+        <Text style={[styles.label, { color: themeColors.text }]}>Dark Mode</Text>
         <Switch value={isDarkMode} onValueChange={setIsDarkMode} />
       </View>
 
-      <Button title="Logout" color="red" onPress={handleLogout} />
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -109,13 +172,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    padding: 20,
+    padding: 25,
   },
   image: {
     height: 120,
     width: 120,
     borderRadius: 60,
-    marginBottom: 10,
+    marginBottom: 25,
   },
   imagePlaceholder: {
     height: 120,
@@ -124,20 +187,58 @@ const styles = StyleSheet.create({
     backgroundColor: '#ddd',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 25,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    marginVertical: 8,
+    width: '100%',
+    height: 50,
   },
   input: {
-    borderBottomWidth: 1,
-    width: '80%',
-    fontSize: 18,
-    marginVertical: 10,
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 6,
+  },
+  editIcon: {
+    marginLeft: 10,
+  },
+  saveBtn: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 25,
     justifyContent: 'space-between',
     width: '60%',
+  },
+  label: {
+    fontSize: 16,
+  },
+  logoutBtn: {
+    backgroundColor: '#e63946',
+    paddingVertical: 10,
+    paddingHorizontal: 35,
+    borderRadius: 10,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });
 
