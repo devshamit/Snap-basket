@@ -12,9 +12,12 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../../context/AuthContext';
+
+const { height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
   const { login } = useContext(AuthContext);
@@ -46,14 +49,17 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.container}>
-            <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+            <Image source={require('../../assets/logo2.jpg')} style={styles.logo} resizeMode="contain" />
             <Text style={styles.heading}>Hi there 👋, welcome back!</Text>
 
             <TextInput
@@ -63,6 +69,7 @@ const LoginScreen = ({ navigation }) => {
               style={styles.input}
               autoCapitalize="none"
               keyboardType="email-address"
+              placeholderTextColor="#8A2BE2"
             />
             <TextInput
               placeholder="Password"
@@ -70,10 +77,11 @@ const LoginScreen = ({ navigation }) => {
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
+              placeholderTextColor="#8A2BE2"
             />
 
             <View style={styles.buttonSpacing}>
-              <Button title="Login" onPress={handleLogin} color="#007AFF" />
+              <Button title="Login" onPress={handleLogin} color="#9370DB" />
             </View>
 
             <Text onPress={() => navigation.navigate('Signup')} style={styles.link}>
@@ -87,13 +95,19 @@ const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor: '#E6E6FA', // full screen background
+  },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
+    height: height,
   },
   container: {
+    flex: 1,
     padding: 24,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#E6E6FA',
     justifyContent: 'center',
   },
   logo: {
@@ -107,16 +121,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
-    color: '#333',
+    color: '#4B0082',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    borderColor: '#D8BFD8',
+    backgroundColor: '#F8F4FF',
     marginVertical: 10,
     padding: 12,
     borderRadius: 10,
     fontSize: 16,
+    color: '#4B0082',
   },
   buttonSpacing: {
     marginTop: 20,
@@ -125,12 +140,12 @@ const styles = StyleSheet.create({
   link: {
     marginTop: 10,
     textAlign: 'center',
-    color: '#555',
+    color: '#6A5ACD',
     fontSize: 15,
   },
   linkBold: {
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#8A2BE2',
   },
 });
 

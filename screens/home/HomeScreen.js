@@ -13,6 +13,7 @@ import {
 import { CartContext } from '../../context/CartContext';
 import { WishlistContext } from '../../context/WishlistContext';
 import { AntDesign } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const HomeScreen = ({ navigation }) => {
   const { dispatch: cartDispatch } = useContext(CartContext);
@@ -30,9 +31,9 @@ const HomeScreen = ({ navigation }) => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('https://dummyjson.com/products');
+      const res = await fetch('https://fakestoreapi.com/products');
       const data = await res.json();
-      setProducts(data.products);
+      setProducts(data);
     } catch (err) {
       alert('Failed to load products');
     } finally {
@@ -43,9 +44,9 @@ const HomeScreen = ({ navigation }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch('https://dummyjson.com/products');
+      const res = await fetch('https://fakestoreapi.com/products');
       const data = await res.json();
-      setProducts(data.products);
+      setProducts(data);
     } catch (err) {
       alert('Refresh failed');
     } finally {
@@ -63,28 +64,29 @@ const HomeScreen = ({ navigation }) => {
     return (
       <View style={styles.card}>
         <View style={{ position: 'relative' }}>
-          <Image source={{ uri: item.thumbnail }} style={styles.image} />
+          <Image source={{ uri: item.image }} style={styles.image} />
           <TouchableOpacity
             style={styles.heart}
             onPress={() => wishlistDispatch({ type: 'TOGGLE_WISHLIST', payload: item })}
           >
-            <AntDesign name={isFav ? 'heart' : 'hearto'} size={22} color="red" />
+            <AntDesign name={isFav ? 'heart' : 'hearto'} size={22} color="#8A2BE2" />
           </TouchableOpacity>
         </View>
 
         <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.price}>${item.price}</Text>
-
+        <Text style={styles.price}>₹{Math.round(item.price * 83)}</Text>
         <View style={styles.buttonGroup}>
           <View style={styles.buttonWrapper}>
             <Button
               title="View Details"
+              color="#9370DB"
               onPress={() => navigation.navigate('ProductDetail', { product: item })}
             />
           </View>
           <View style={styles.buttonWrapper}>
             <Button
               title="Add to Cart"
+              color="#8A2BE2"
               onPress={() => {
                 cartDispatch({ type: 'ADD_TO_CART', payload: item });
                 showMessage('Added to cart');
@@ -97,11 +99,11 @@ const HomeScreen = ({ navigation }) => {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
+    return <ActivityIndicator size="large" style={{ marginTop: 50 }} color="#9370DB" />;
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <LinearGradient colors={['#E6E6FA', '#D8BFD8', '#E0BBE4']} style={{ flex: 1 }}>
       {message !== '' && (
         <View style={styles.toast}>
           <Text style={styles.toastText}>{message}</Text>
@@ -112,36 +114,43 @@ const HomeScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#9370DB" />
         }
         contentContainerStyle={{ padding: 10 }}
       />
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 15,
     padding: 15,
-    marginBottom: 15,
+    marginBottom: 20,
+    shadowColor: '#8A2BE2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
     elevation: 4,
   },
   image: {
-    height: 150,
+    height: 160,
     width: '100%',
-    borderRadius: 10,
-    marginBottom: 10,
-    resizeMode: 'cover',
+    borderRadius: 12,
+    marginBottom: 12,
+    resizeMode: 'contain',
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4B0082', // Indigo
+    marginBottom: 4,
   },
   price: {
-    color: '#009688',
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#8A2BE2', // BlueViolet
     marginBottom: 8,
   },
   toast: {
@@ -149,7 +158,7 @@ const styles = StyleSheet.create({
     top: 10,
     left: '10%',
     right: '10%',
-    backgroundColor: '#28a745',
+    backgroundColor: '#9370DB', // Medium Purple
     padding: 12,
     borderRadius: 10,
     zIndex: 999,
@@ -167,15 +176,17 @@ const styles = StyleSheet.create({
     right: 10,
     backgroundColor: '#fff',
     borderRadius: 20,
-    padding: 4,
-    elevation: 2,
+    padding: 6,
+    elevation: 3,
   },
   buttonGroup: {
-    marginTop: 10,
-    flexDirection: 'column',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
   },
   buttonWrapper: {
-    marginBottom: 10,
+    flex: 1,
+    marginRight: 8,
   },
 });
 

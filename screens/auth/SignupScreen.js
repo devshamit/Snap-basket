@@ -28,16 +28,15 @@ const SignupScreen = ({ navigation }) => {
       return;
     }
 
-    const newUser = { firstName, lastName, mobile, email:email.trim().toLowerCase(), password };
+    const newUser = { firstName, lastName, mobile, email: email.trim().toLowerCase(), password };
     await AsyncStorage.setItem('localUser', JSON.stringify(newUser));
-    console.log('User saved:', newUser);
     Alert.alert('Success', 'Signup successful. Please login.');
     navigation.navigate('Login');
   };
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={styles.wrapper}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
@@ -48,7 +47,7 @@ const SignupScreen = ({ navigation }) => {
         >
           <View style={styles.container}>
             <Image
-              source={require('../../assets/logo.png')}
+              source={require('../../assets/logo2.jpg')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -59,12 +58,14 @@ const SignupScreen = ({ navigation }) => {
               value={firstName}
               onChangeText={setFirstName}
               style={styles.input}
+              placeholderTextColor="#8A2BE2"
             />
             <TextInput
               placeholder="Last Name"
               value={lastName}
               onChangeText={setLastName}
               style={styles.input}
+              placeholderTextColor="#8A2BE2"
             />
             <TextInput
               placeholder="Mobile"
@@ -72,6 +73,7 @@ const SignupScreen = ({ navigation }) => {
               onChangeText={setMobile}
               style={styles.input}
               keyboardType="phone-pad"
+              placeholderTextColor="#8A2BE2"
             />
             <TextInput
               placeholder="Email"
@@ -80,6 +82,7 @@ const SignupScreen = ({ navigation }) => {
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
+              placeholderTextColor="#8A2BE2"
             />
             <TextInput
               placeholder="Password"
@@ -87,10 +90,11 @@ const SignupScreen = ({ navigation }) => {
               onChangeText={setPassword}
               secureTextEntry
               style={styles.input}
+              placeholderTextColor="#8A2BE2"
             />
 
             <View style={styles.buttonSpacing}>
-              <Button title="Sign Up" onPress={handleSignup} color="#007AFF" />
+              <Button title="Sign Up" onPress={handleSignup} color="#9370DB" />
             </View>
 
             <Text onPress={() => navigation.navigate('Login')} style={styles.link}>
@@ -104,13 +108,19 @@ const SignupScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#E6E6FA', // lavender background across the full screen
+  },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
   },
   container: {
+    flex: 1,
     padding: 24,
-    backgroundColor: '#f2f2f2',
+    minHeight: '100%',
+    backgroundColor: '#E6E6FA', // lavender
     justifyContent: 'center',
   },
   logo: {
@@ -124,16 +134,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#333',
+    color: '#4B0082',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    borderColor: '#D8BFD8',
+    backgroundColor: '#F8F4FF',
     marginVertical: 8,
     padding: 12,
     borderRadius: 10,
     fontSize: 16,
+    color: '#4B0082',
   },
   buttonSpacing: {
     marginTop: 20,
@@ -142,12 +153,12 @@ const styles = StyleSheet.create({
   link: {
     marginTop: 10,
     textAlign: 'center',
-    color: '#555',
+    color: '#6A5ACD',
     fontSize: 15,
   },
   linkBold: {
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#8A2BE2',
   },
 });
 

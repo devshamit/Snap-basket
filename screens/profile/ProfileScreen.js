@@ -16,6 +16,8 @@ import { ThemeContext } from '../../context/ThemeContext';
 import { AuthContext } from '../../context/AuthContext';
 import { AntDesign } from '@expo/vector-icons';
 
+// ...imports remain unchanged
+
 const ProfileScreen = () => {
   const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
   const { logout } = useContext(AuthContext);
@@ -110,11 +112,13 @@ const ProfileScreen = () => {
   };
 
   const themeColors = {
-    bg: isDarkMode ? '#121212' : '#f9f9f9',
-    text: isDarkMode ? '#fff' : '#222',
-    border: isDarkMode ? '#555' : '#ccc',
-    placeholder: isDarkMode ? '#aaa' : '#888',
-    inputBg: isDarkMode ? '#1f1f1f' : '#fff',
+    bg: isDarkMode ? '#2e2a36' : '#E6E6FA', // lavender background
+    text: isDarkMode ? '#fff' : '#3a2c5a',
+    border: isDarkMode ? '#888' : '#D8BFD8', // thistle
+    placeholder: isDarkMode ? '#aaa' : '#9370DB', // medium purple
+    inputBg: isDarkMode ? '#1e1e1e' : '#f5f0fa',
+    accent: '#9370DB', // medium purple
+    danger: '#b22222', // firebrick
   };
 
   return (
@@ -123,8 +127,8 @@ const ProfileScreen = () => {
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.image} />
         ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={{ color: '#888' }}>Pick Image</Text>
+          <View style={[styles.imagePlaceholder, { backgroundColor: themeColors.border }]}>
+            <Text style={{ color: themeColors.placeholder }}>Pick Image</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -147,12 +151,15 @@ const ProfileScreen = () => {
             placeholderTextColor={themeColors.placeholder}
           />
           <TouchableOpacity onPress={() => toggleEdit(field)} style={styles.editIcon}>
-            <AntDesign name="edit" size={20} color="#007AFF" />
+            <AntDesign name="edit" size={20} color={themeColors.accent} />
           </TouchableOpacity>
         </View>
       ))}
 
-      <TouchableOpacity style={styles.saveBtn} onPress={saveFieldChanges}>
+      <TouchableOpacity
+        style={[styles.saveBtn, { backgroundColor: themeColors.accent }]}
+        onPress={saveFieldChanges}
+      >
         <Text style={styles.saveBtnText}>Save Changes</Text>
       </TouchableOpacity>
 
@@ -161,7 +168,10 @@ const ProfileScreen = () => {
         <Switch value={isDarkMode} onValueChange={setIsDarkMode} />
       </View>
 
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+      <TouchableOpacity
+        style={[styles.logoutBtn, { backgroundColor: themeColors.danger }]}
+        onPress={handleLogout}
+      >
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </View>
@@ -184,7 +194,6 @@ const styles = StyleSheet.create({
     height: 120,
     width: 120,
     borderRadius: 60,
-    backgroundColor: '#ddd',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 25,
@@ -203,12 +212,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 6,
+    borderRadius: 10,
+    paddingHorizontal: 10,
   },
   editIcon: {
     marginLeft: 10,
   },
   saveBtn: {
-    backgroundColor: '#007AFF',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 10,
@@ -230,7 +240,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   logoutBtn: {
-    backgroundColor: '#e63946',
     paddingVertical: 10,
     paddingHorizontal: 35,
     borderRadius: 10,
